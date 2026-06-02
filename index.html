@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AiorInterior – StockMate</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="aior.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Connecting to database...</div>
+</div>
+
+<!-- SPLASH -->
+<div class="page active" id="splash">
+  <div class="splash-bg"></div>
+  <div class="splash-grid"></div>
+  <div class="splash-content">
+    <div class="splash-badge">Inventory System</div>
+    <div class="splash-logo">Aior<span class="brand">Interior</span></div>
+    <div class="splash-sub">StockMate · Firebase Edition</div>
+    <div class="splash-loader"><div class="splash-fill"></div></div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="page" id="login">
+  <div class="login-bg"></div>
+  <div class="login-box">
+    <div class="login-header">
+      <div class="brand-mark">AiorInterior · StockMate</div>
+      <h2>Employee Sign In</h2>
+      <p>Internal access only. Use your assigned company credentials.</p>
+    </div>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="Enter username" autocomplete="username"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn-main" onclick="doLogin()">Sign In →</button>
+    <div class="login-err" id="login-err">❌ Invalid username or password.</div>
+    <div class="demo-hint">
+      <div class="demo-title">Demo Credentials</div>
+      <div class="demo-users">
+        <div class="demo-user">
+          <div class="du-left"><div class="du-name">admin</div><div class="du-role">Manager · Full Access</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><div class="du-pass">1234</div><div class="du-access both">ALL</div></div>
+        </div>
+        <div class="demo-user">
+          <div class="du-left"><div class="du-name">acrylic_staff</div><div class="du-role">Staff · Acrylic Only</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><div class="du-pass">ac2024</div><div class="du-access acrylic-only">ACRYLIC</div></div>
+        </div>
+        <div class="demo-user">
+          <div class="du-left"><div class="du-name">moulding_staff</div><div class="du-role">Staff · Moulding Only</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><div class="du-pass">mo2024</div><div class="du-access moulding-only">MOULDING</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">Stock<span class="t">Mate</span></div>
+    <div class="topbar-sep"></div>
+    <span style="font-size:12px;color:var(--muted)">AiorInterior</span>
+    <div style="display:flex;align-items:center;gap:6px;margin-left:8px">
+      <div class="sync-dot synced" id="sync-dot-dash"></div>
+      <span style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace" id="sync-label-dash">Live</span>
+    </div>
+    <div class="topbar-right">
+      <div class="user-pill">
+        <div class="user-avatar" id="user-avatar" style="background:linear-gradient(135deg,#38bdf8,#818cf8)">A</div>
+        <span id="user-pill-name">admin</span>
+      </div>
+      <div class="access-badge full" id="access-badge">Full Access</div>
+      <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="dash-body">
+    <div class="dash-welcome">
+      <h1>Hello, <span class="hi" id="dash-name">Admin</span> 👋</h1>
+      <p id="dash-desc">Full access granted. Select a category below to manage stock.</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card total"><div class="stat-icon">📦</div><div class="stat-val" id="total-items">—</div><div class="stat-label">Total Items</div></div>
+      <div class="stat-card low"><div class="stat-icon">⚠️</div><div class="stat-val" id="low-stock" style="color:var(--warn)">—</div><div class="stat-label">Low Stock</div></div>
+      <div class="stat-card out"><div class="stat-icon">🚨</div><div class="stat-val" id="out-stock" style="color:var(--danger)">—</div><div class="stat-label">Out of Stock</div></div>
+    </div>
+    <div class="category-grid">
+      <div class="cat-card acrylic" id="card-acrylic" onclick="showPage('acrylic-page')">
+        <div class="cat-card-glow"></div>
+        <div class="cat-card-inner">
+          <div class="cat-icon">🔷</div>
+          <div class="cat-name">Acrylic</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px" id="a-count-sub">— items</div>
+          <div class="cat-stats">
+            <span class="cat-stat ok" id="a-ok">— ok</span>
+            <span class="cat-stat low" id="a-low">— low</span>
+            <span class="cat-stat out" id="a-out">— out</span>
+          </div>
+        </div>
+        <div class="cat-arrow">↗</div>
+      </div>
+      <div class="cat-card moulding" id="card-moulding" onclick="showPage('moulding-page')">
+        <div class="cat-card-glow"></div>
+        <div class="cat-card-inner">
+          <div class="cat-icon">🟧</div>
+          <div class="cat-name">Moulding</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px" id="m-count-sub">— items</div>
+          <div class="cat-stats">
+            <span class="cat-stat ok" id="m-ok">— ok</span>
+            <span class="cat-stat low" id="m-low">— low</span>
+            <span class="cat-stat out" id="m-out">— out</span>
+          </div>
+        </div>
+        <div class="cat-arrow">↗</div>
+      </div>
+    </div>
+    <div class="last-updated" id="last-updated">🔴 Not connected</div>
+  </div>
+</div>
+
+<!-- ACRYLIC PAGE -->
+<div class="page" id="acrylic-page">
+  <div class="topbar">
+    <div class="topbar-logo">Stock<span class="t">Mate</span></div>
+    <div class="topbar-sep"></div>
+    <button class="btn-back" onclick="showPage('dashboard')">← Dashboard</button>
+    <div class="page-title a" style="margin-left:4px">🔷 Acrylic Stock</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-left:8px">
+      <div class="sync-dot synced" id="sync-dot-a"></div>
+      <span style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace" id="sync-label-a">Live</span>
+    </div>
+    <div class="topbar-right">
+      <div class="page-badge" id="a-badge">0 items</div>
+      <div class="user-pill">
+        <div class="user-avatar" id="ua-a" style="background:linear-gradient(135deg,#38bdf8,#818cf8)">A</div>
+        <span id="uname-a">admin</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="stock-body">
+    <div class="summary-strip" id="a-summary"></div>
+    <div class="add-form">
+      <div class="form-title">+ Add New Item</div>
+      <div class="form-row">
+        <div class="form-field"><label>Product Code</label><input type="text" id="a-code" placeholder="e.g. KA001"/></div>
+        <div class="form-field"><label>Description</label><input type="text" id="a-desc" placeholder="e.g. 3mm Clear Sheet"/></div>
+        <div class="form-field"><label>Unit</label>
+          <select id="a-unit"><option value="pcs">pcs</option><option value="sheets">sheets</option><option value="rolls">rolls</option><option value="kg">kg</option><option value="m">m</option><option value="sqft">sqft</option></select>
+        </div>
+        <div class="form-field"><label>Quantity</label><input type="number" id="a-qty" placeholder="0" min="0"/></div>
+        <button class="btn-add a" onclick="addItem('a')">＋ Add</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" type="text" id="a-search" placeholder="Search code or description..." oninput="renderTable('a')"/>
+      </div>
+      <select class="filter-select" id="a-filter" onchange="renderTable('a')">
+        <option value="all">All Status</option><option value="ok">In Stock</option><option value="low">Low Stock</option><option value="out">Out of Stock</option>
+      </select>
+      <button class="toolbar-btn" onclick="exportCSV('a')">⬇ CSV</button>
+      <button class="toolbar-btn" onclick="printTable('a')">🖨 Print</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th onclick="sortTable('a','#')">#</th>
+        <th onclick="sortTable('a','code')">Product Code</th>
+        <th onclick="sortTable('a','desc')">Description</th>
+        <th onclick="sortTable('a','qty')">Qty</th>
+        <th>Unit</th>
+        <th onclick="sortTable('a','status')">Status</th>
+        <th onclick="sortTable('a','date')">Last Updated</th>
+        <th onclick="sortTable('a','added')">Added On</th>
+        <th>Actions</th>
+      </tr></thead><tbody id="a-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- MOULDING PAGE -->
+<div class="page" id="moulding-page">
+  <div class="topbar">
+    <div class="topbar-logo">Stock<span class="t">Mate</span></div>
+    <div class="topbar-sep"></div>
+    <button class="btn-back" onclick="showPage('dashboard')">← Dashboard</button>
+    <div class="page-title m" style="margin-left:4px">🟧 Moulding Stock</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-left:8px">
+      <div class="sync-dot synced" id="sync-dot-m"></div>
+      <span style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace" id="sync-label-m">Live</span>
+    </div>
+    <div class="topbar-right">
+      <div class="page-badge" id="m-badge">0 items</div>
+      <div class="user-pill">
+        <div class="user-avatar" id="ua-m" style="background:linear-gradient(135deg,#fb923c,#f43f5e)">M</div>
+        <span id="uname-m">admin</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="stock-body">
+    <div class="summary-strip" id="m-summary"></div>
+    <div class="add-form">
+      <div class="form-title">+ Add New Item</div>
+      <div class="form-row">
+        <div class="form-field"><label>Product Code</label><input type="text" id="m-code" placeholder="e.g. KM001"/></div>
+        <div class="form-field"><label>Description</label><input type="text" id="m-desc" placeholder="e.g. Oak Wood Frame"/></div>
+        <div class="form-field"><label>Unit</label>
+          <select id="m-unit"><option value="pcs">pcs</option><option value="m">m</option><option value="ft">ft</option><option value="rolls">rolls</option><option value="kg">kg</option><option value="boxes">boxes</option></select>
+        </div>
+        <div class="form-field"><label>Quantity</label><input type="number" id="m-qty" placeholder="0" min="0"/></div>
+        <button class="btn-add m" onclick="addItem('m')">＋ Add</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" type="text" id="m-search" placeholder="Search code or description..." oninput="renderTable('m')"/>
+      </div>
+      <select class="filter-select" id="m-filter" onchange="renderTable('m')">
+        <option value="all">All Status</option><option value="ok">In Stock</option><option value="low">Low Stock</option><option value="out">Out of Stock</option>
+      </select>
+      <button class="toolbar-btn" onclick="exportCSV('m')">⬇ CSV</button>
+      <button class="toolbar-btn" onclick="printTable('m')">🖨 Print</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th onclick="sortTable('m','#')">#</th>
+        <th onclick="sortTable('m','code')">Product Code</th>
+        <th onclick="sortTable('m','desc')">Description</th>
+        <th onclick="sortTable('m','qty')">Qty</th>
+        <th>Unit</th>
+        <th onclick="sortTable('m','status')">Status</th>
+        <th onclick="sortTable('m','date')">Last Updated</th>
+        <th onclick="sortTable('m','added')">Added On</th>
+        <th>Actions</th>
+      </tr></thead><tbody id="m-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h3 id="modal-title">Edit Item</h3>
+    <div class="modal-field"><label>Product Code</label><input type="text" id="modal-code" disabled style="opacity:.5"/></div>
+    <div class="modal-field"><label>Description</label><input type="text" id="modal-desc"/></div>
+    <div class="modal-field"><label>Quantity</label><input type="number" id="modal-qty" min="0"/></div>
+    <div class="modal-field"><label>Unit</label>
+      <select id="modal-unit">
+        <option value="pcs">pcs</option><option value="sheets">sheets</option><option value="rolls">rolls</option>
+        <option value="kg">kg</option><option value="m">m</option><option value="sqft">sqft</option>
+        <option value="ft">ft</option><option value="boxes">boxes</option>
+      </select>
+    </div>
+    <div class="modal-field"><label>Notes</label><textarea id="modal-notes" placeholder="Optional notes..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save a" id="modal-save" onclick="saveModal()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+// ── FIREBASE ──
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBOx3AXKVLxwMBL9sZEoMEdE5_YQ4z0trc",
+  authDomain: "aior-stockmate.firebaseapp.com",
+  projectId: "aior-stockmate",
+  storageBucket: "aior-stockmate.firebasestorage.app",
+  messagingSenderId: "116748681413",
+  appId: "1:116748681413:web:b5f94d97d309aec98e70ac",
+  measurementId: "G-NFPJ5PYSFY"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── IN-MEMORY STOCK (kept in sync by listeners) ──
+const stockCache = { a: [], m: [] };
+let unsubscribers  = [];
+
+// ── COLLECTION NAMES ──
+const COL = { a: 'acrylic', m: 'moulding' };
+
+// ── USERS ──
+const USERS = {
+  admin:          { pass:'1234',    access:'both',    role:'Manager · Full Access',    color:'linear-gradient(135deg,#38bdf8,#818cf8)' },
+  acrylic_staff:  { pass:'ac2024',  access:'acrylic', role:'Staff · Acrylic Only',     color:'linear-gradient(135deg,#38bdf8,#0ea5e9)' },
+  moulding_staff: { pass:'mo2024',  access:'moulding',role:'Staff · Moulding Only',    color:'linear-gradient(135deg,#fb923c,#f97316)' }
+};
+
+let currentUser = null;
+let sortState = { a:{col:null,dir:1}, m:{col:null,dir:1} };
+let editCtx = { cat:null, code:null };
+
+// ── HELPERS ──
+function fmtDateTime() {
+  return new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+}
+function getStatus(qty) {
+  if (qty <= 0)  return ['Out of Stock','status-out','out'];
+  if (qty <= 10) return ['Low Stock','status-low','low'];
+  return ['In Stock','status-ok','ok'];
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast '+type+' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.className='toast'; }, 2800);
+}
+
+// ── LOADING ──
+function showLoading(msg='Loading...') {
+  document.getElementById('loading-text').textContent = msg;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+}
+function hideLoading() {
+  document.getElementById('loading-overlay').classList.add('hidden');
+}
+
+// ── SYNC STATUS ──
+function setSyncStatus(id, state) {
+  // id: 'dash','a','m'  state: 'synced','syncing','error'
+  const dot   = document.getElementById('sync-dot-'+id);
+  const label = document.getElementById('sync-label-'+id);
+  if (!dot) return;
+  dot.className = 'sync-dot '+state;
+  label.textContent = state === 'synced' ? 'Live' : state === 'syncing' ? 'Syncing…' : 'Offline';
+}
+
+// ── PAGE NAV ──
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id==='dashboard')    updateDashStats();
+  if (id==='acrylic-page') { renderTable('a'); renderSummary('a'); }
+  if (id==='moulding-page'){ renderTable('m'); renderSummary('m'); }
+}
+window.showPage = showPage;
+
+// ── REAL-TIME LISTENERS ──
+function startListeners() {
+  unsubscribers.forEach(u=>u());
+  unsubscribers = [];
+  ['a','m'].forEach(cat => {
+    setSyncStatus(cat,'syncing');
+    setSyncStatus('dash','syncing');
+    const unsub = onSnapshot(
+      collection(db, COL[cat]),
+      (snap) => {
+        stockCache[cat] = snap.docs.map(d => d.data());
+        setSyncStatus(cat,'synced');
+        setSyncStatus('dash','synced');
+        document.getElementById('last-updated').textContent = '🟢 Live sync · '+fmtDateTime();
+        // Re-render if on that page
+        const active = document.querySelector('.page.active');
+        if (active) {
+          if (active.id==='dashboard')     updateDashStats();
+          if (active.id==='acrylic-page'  && cat==='a') { renderTable('a'); renderSummary('a'); }
+          if (active.id==='moulding-page' && cat==='m') { renderTable('m'); renderSummary('m'); }
+        }
+        updateDashStats();
+      },
+      (err) => {
+        console.error(err);
+        setSyncStatus(cat,'error');
+        setSyncStatus('dash','error');
+        document.getElementById('last-updated').textContent = '🔴 Connection error';
+        showToast('Connection error. Check internet.','error');
+      }
+    );
+    unsubscribers.push(unsub);
+  });
+}
+
+function stopListeners() {
+  unsubscribers.forEach(u=>u());
+  unsubscribers = [];
+}
+
+// ── SPLASH → LOGIN ──
+setTimeout(()=>showPage('login'), 2400);
+
+// ── LOGIN ──
+async function doLogin() {
+  const u = document.getElementById('username').value.trim().toLowerCase();
+  const p = document.getElementById('password').value;
+  const err = document.getElementById('login-err');
+  const user = USERS[u];
+  if (user && user.pass === p) {
+    currentUser = { name:u, ...user };
+    err.style.display = 'none';
+    showLoading('Connecting to database…');
+    applyAccessControl();
+    startListeners();
+    // small delay so listeners fire at least once
+    setTimeout(()=>{
+      hideLoading();
+      showPage('dashboard');
+      showToast('Welcome back, '+u+' ✓');
+    }, 1200);
+  } else {
+    err.style.display = 'block';
+    document.getElementById('password').value = '';
+  }
+}
+window.doLogin = doLogin;
+
+document.addEventListener('keydown', e => {
+  if (e.key==='Enter' && document.querySelector('.page.active')?.id==='login') doLogin();
+});
+
+// ── ACCESS CONTROL ──
+function applyAccessControl() {
+  const u = currentUser;
+  const initials = u.name.charAt(0).toUpperCase();
+  ['user-pill-name','uname-a','uname-m'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=u.name; });
+  ['user-avatar','ua-a','ua-m'].forEach(id=>{ const el=document.getElementById(id); if(el){el.textContent=initials;el.style.background=u.color;} });
+  document.getElementById('dash-name').textContent = initials+u.name.slice(1).replace('_',' ');
+  const descs = { both:'Full access granted. Manage Acrylic and Moulding stock below.', acrylic:'You have access to Acrylic inventory only.', moulding:'You have access to Moulding inventory only.' };
+  document.getElementById('dash-desc').textContent = descs[u.access];
+  const ab = document.getElementById('access-badge');
+  if (u.access==='both')    { ab.textContent='Full Access';    ab.className='access-badge full'; }
+  else if (u.access==='acrylic') { ab.textContent='Acrylic Only';  ab.className='access-badge acrylic'; }
+  else                           { ab.textContent='Moulding Only'; ab.className='access-badge moulding'; }
+  document.getElementById('card-acrylic').classList.toggle('locked',  u.access==='moulding');
+  document.getElementById('card-moulding').classList.toggle('locked', u.access==='acrylic');
+}
+
+// ── LOGOUT ──
+function doLogout() {
+  stopListeners();
+  currentUser = null;
+  stockCache.a = []; stockCache.m = [];
+  document.getElementById('username').value = '';
+  document.getElementById('password').value = '';
+  showPage('login');
+}
+window.doLogout = doLogout;
+
+// ── FIRESTORE WRITE: SAVE ITEM ──
+async function fsSetItem(cat, item) {
+  setSyncStatus(cat,'syncing');
+  setSyncStatus('dash','syncing');
+  await setDoc(doc(db, COL[cat], item.code), item);
+}
+
+// ── FIRESTORE WRITE: DELETE ITEM ──
+async function fsDeleteItem(cat, code) {
+  setSyncStatus(cat,'syncing');
+  setSyncStatus('dash','syncing');
+  await deleteDoc(doc(db, COL[cat], code));
+}
+
+// ── ADD ITEM ──
+async function addItem(cat) {
+  const code = document.getElementById(cat+'-code').value.trim().toUpperCase();
+  const desc = document.getElementById(cat+'-desc').value.trim();
+  const unit = document.getElementById(cat+'-unit').value;
+  const qty  = parseInt(document.getElementById(cat+'-qty').value);
+  if (!code) { showToast('Product code is required','error'); return; }
+  if (isNaN(qty)||qty<0) { showToast('Enter a valid quantity','error'); return; }
+  if (stockCache[cat].find(i=>i.code===code)) { showToast('Code '+code+' already exists!','warn'); return; }
+  const now = fmtDateTime();
+  const item = { code, desc:desc||'—', unit, qty, date:now, added:now, notes:'' };
+  try {
+    await fsSetItem(cat, item);
+    document.getElementById(cat+'-code').value='';
+    document.getElementById(cat+'-desc').value='';
+    document.getElementById(cat+'-qty').value='';
+    showToast('✓ '+code+' added — synced to cloud');
+  } catch(e) {
+    showToast('Save failed: '+e.message,'error');
+  }
+}
+window.addItem = addItem;
+
+// ── CHANGE QTY ──
+async function changeQty(cat, code, delta) {
+  const item = stockCache[cat].find(i=>i.code===code);
+  if (!item) return;
+  const newQty = Math.max(0, item.qty + delta);
+  if (newQty === item.qty) return;
+  const updated = { ...item, qty:newQty, date:fmtDateTime() };
+  try {
+    await fsSetItem(cat, updated);
+  } catch(e) {
+    showToast('Update failed','error');
+  }
+}
+window.changeQty = changeQty;
+
+// ── DELETE ──
+async function deleteItem(cat, code) {
+  if (!confirm('Delete item '+code+'? This cannot be undone.')) return;
+  try {
+    await fsDeleteItem(cat, code);
+    showToast('🗑 '+code+' deleted','warn');
+  } catch(e) {
+    showToast('Delete failed: '+e.message,'error');
+  }
+}
+window.deleteItem = deleteItem;
+
+// ── EDIT MODAL ──
+function openEdit(cat, code) {
+  const item = stockCache[cat].find(i=>i.code===code);
+  if (!item) return;
+  editCtx = { cat, code };
+  document.getElementById('modal-title').textContent = 'Edit · '+code;
+  document.getElementById('modal-code').value  = item.code;
+  document.getElementById('modal-desc').value  = item.desc||'';
+  document.getElementById('modal-qty').value   = item.qty;
+  document.getElementById('modal-unit').value  = item.unit||'pcs';
+  document.getElementById('modal-notes').value = item.notes||'';
+  document.getElementById('modal-save').className = 'btn-save '+(cat==='a'?'a':'m');
+  document.getElementById('edit-modal').classList.add('open');
+}
+window.openEdit = openEdit;
+
+function closeModal() { document.getElementById('edit-modal').classList.remove('open'); }
+window.closeModal = closeModal;
+
+async function saveModal() {
+  const { cat, code } = editCtx;
+  const item = stockCache[cat].find(i=>i.code===code);
+  if (!item) return;
+  const newQty = parseInt(document.getElementById('modal-qty').value);
+  if (isNaN(newQty)||newQty<0) { showToast('Invalid quantity','error'); return; }
+  const updated = {
+    ...item,
+    desc:  document.getElementById('modal-desc').value.trim()||'—',
+    qty:   newQty,
+    unit:  document.getElementById('modal-unit').value,
+    notes: document.getElementById('modal-notes').value.trim(),
+    date:  fmtDateTime()
+  };
+  try {
+    await fsSetItem(cat, updated);
+    closeModal();
+    showToast('✓ '+code+' updated — synced');
+  } catch(e) {
+    showToast('Save failed: '+e.message,'error');
+  }
+}
+window.saveModal = saveModal;
+
+document.getElementById('edit-modal').addEventListener('click', e => {
+  if (e.target===document.getElementById('edit-modal')) closeModal();
+});
+
+// ── SORT ──
+function sortTable(cat, col) {
+  const s = sortState[cat];
+  s.dir = s.col===col ? s.dir*-1 : 1;
+  s.col = col;
+  renderTable(cat);
+}
+window.sortTable = sortTable;
+
+// ── SUMMARY STRIP ──
+function renderSummary(cat) {
+  const stock = stockCache[cat];
+  const total = stock.length;
+  const totalQty = stock.reduce((s,i)=>s+i.qty,0);
+  const low  = stock.filter(i=>i.qty>0&&i.qty<=10).length;
+  const out  = stock.filter(i=>i.qty<=0).length;
+  document.getElementById(cat+'-summary').innerHTML = `
+    <div class="strip-box"><div class="strip-val">${total}</div><div class="strip-label">Total Items</div></div>
+    <div class="strip-box"><div class="strip-val">${totalQty}</div><div class="strip-label">Total Units</div></div>
+    <div class="strip-box"><div class="strip-val" style="color:var(--warn)">${low}</div><div class="strip-label">Low Stock</div></div>
+    <div class="strip-box"><div class="strip-val" style="color:var(--danger)">${out}</div><div class="strip-label">Out of Stock</div></div>`;
+}
+
+// ── RENDER TABLE ──
+function renderTable(cat) {
+  let stock = [...stockCache[cat]];
+  const query  = (document.getElementById(cat+'-search')?.value||'').toLowerCase();
+  const filter = document.getElementById(cat+'-filter')?.value||'all';
+  let filtered = stock.filter(i => {
+    const matchQ = !query || i.code.toLowerCase().includes(query)||(i.desc||'').toLowerCase().includes(query);
+    const [,,sk] = getStatus(i.qty);
+    return matchQ && (filter==='all'||sk===filter);
+  });
+  const s = sortState[cat];
+  if (s.col) {
+    filtered.sort((a,b)=>{
+      let va,vb;
+      if (s.col==='code')   {va=a.code;vb=b.code;}
+      else if (s.col==='desc')   {va=a.desc||'';vb=b.desc||'';}
+      else if (s.col==='qty'||s.col==='status') {va=a.qty;vb=b.qty;}
+      else if (s.col==='date')   {va=a.date||'';vb=b.date||'';}
+      else if (s.col==='added')  {va=a.added||'';vb=b.added||'';}
+      if (typeof va==='number') return (va-vb)*s.dir;
+      return va.localeCompare(vb)*s.dir;
+    });
+  }
+  const tbody = document.getElementById(cat+'-tbody');
+  const badge = document.getElementById(cat+'-badge');
+  if (badge) badge.textContent = stock.length+' item'+(stock.length!==1?'s':'');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="e-icon">📭</div><div class="e-title">No items found</div>Try a different search or add a new item above</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map((item,idx)=>{
+    const [label,cls] = getStatus(item.qty);
+    return `<tr class="${idx===0?'row-new':''}">
+      <td style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:12px">${idx+1}</td>
+      <td class="code-cell">${item.code}</td>
+      <td class="desc-cell" title="${item.desc||''}">${item.desc||'—'}</td>
+      <td><div class="qty-cell">
+        <button class="qty-btn" onclick="changeQty('${cat}','${item.code}',-1)">−</button>
+        <span class="qty-val">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty('${cat}','${item.code}',1)">+</button>
+      </div></td>
+      <td style="color:var(--text2);font-size:12px;font-family:'JetBrains Mono',monospace">${item.unit||'pcs'}</td>
+      <td><span class="status-badge ${cls}">${label}</span></td>
+      <td class="date-cell">${item.date||'—'}</td>
+      <td class="date-cell">${item.added||'—'}</td>
+      <td><div class="actions-cell">
+        <button class="btn-edit" onclick="openEdit('${cat}','${item.code}')">Edit</button>
+        <button class="btn-del"  onclick="deleteItem('${cat}','${item.code}')" title="Delete">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── DASHBOARD STATS ──
+function updateDashStats() {
+  const a = stockCache.a;
+  const m = stockCache.m;
+  const u = currentUser;
+  let rel = [];
+  if (!u||u.access==='both')     rel=[...a,...m];
+  else if (u.access==='acrylic') rel=a;
+  else                           rel=m;
+  document.getElementById('total-items').textContent = rel.length;
+  document.getElementById('low-stock').textContent   = rel.filter(i=>i.qty>0&&i.qty<=10).length;
+  document.getElementById('out-stock').textContent   = rel.filter(i=>i.qty<=0).length;
+  document.getElementById('a-count-sub').textContent = a.length+' items';
+  document.getElementById('a-ok').textContent  = a.filter(i=>i.qty>10).length+' ok';
+  document.getElementById('a-low').textContent = a.filter(i=>i.qty>0&&i.qty<=10).length+' low';
+  document.getElementById('a-out').textContent = a.filter(i=>i.qty<=0).length+' out';
+  document.getElementById('m-count-sub').textContent = m.length+' items';
+  document.getElementById('m-ok').textContent  = m.filter(i=>i.qty>10).length+' ok';
+  document.getElementById('m-low').textContent = m.filter(i=>i.qty>0&&i.qty<=10).length+' low';
+  document.getElementById('m-out').textContent = m.filter(i=>i.qty<=0).length+' out';
+}
+
+// ── EXPORT CSV ──
+function exportCSV(cat) {
+  const stock = stockCache[cat];
+  if (!stock.length) { showToast('No data to export','warn'); return; }
+  const name = cat==='a'?'Acrylic':'Moulding';
+  const rows = [
+    ['#','Product Code','Description','Quantity','Unit','Status','Last Updated','Added On','Notes'],
+    ...stock.map((i,idx)=>[idx+1,i.code,i.desc||'',i.qty,i.unit||'pcs',getStatus(i.qty)[0],i.date||'',i.added||'',i.notes||''])
+  ];
+  const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download=name+'_Stock_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  showToast('✓ CSV exported');
+}
+window.exportCSV = exportCSV;
+
+// ── PRINT ──
+function printTable(cat) {
+  const stock = stockCache[cat];
+  const name  = cat==='a'?'Acrylic':'Moulding';
+  const rows  = stock.map((i,idx)=>`<tr><td>${idx+1}</td><td><b>${i.code}</b></td><td>${i.desc||'—'}</td><td>${i.qty}</td><td>${i.unit||'pcs'}</td><td>${getStatus(i.qty)[0]}</td><td>${i.date||'—'}</td></tr>`).join('');
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>${name} Stock</title><style>body{font-family:monospace;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;font-size:12px;text-align:left}th{background:#f5f5f5}</style></head><body><h2>AiorInterior — ${name} Stock</h2><p>Generated: ${fmtDateTime()} | Items: ${stock.length}</p><table><thead><tr><th>#</th><th>Code</th><th>Description</th><th>Qty</th><th>Unit</th><th>Status</th><th>Last Updated</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+  w.document.close(); w.print();
+}
+window.printTable = printTable;
+
+// hide loading on start
+hideLoading();
+</script>
+</body>
+</html>
